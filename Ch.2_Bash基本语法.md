@@ -26,14 +26,16 @@ ubuntu  lighthouse
 
 - 命令组合符`&&`和`||`：控制多个命令之间的继发关系。
 
+  `&&`表示如果前一个命令运行成功，则继续运行下一个命令。
+  
   ```bash
   >>> expr 1 + 1 == 2 && echo correct
   1
   correct
   ```
 
-  `&&`表示如果前一个命令运行成功，则继续运行下一个命令。
-
+  `||`表示如果前一个命令运行失败，则继续运行下一个命令。
+  
   ```bash
   >>> expr 1 + 1 == 100 || echo not correct
   1
@@ -42,8 +44,7 @@ ubuntu  lighthouse
   >>> expr 1 + 1 == 2 || echo correct
   1
   ```
-
-  `||`表示如果前一个命令运行失败，则继续运行下一个命令。
+  
 
 ---------------------------------------------
 
@@ -52,20 +53,21 @@ ubuntu  lighthouse
 ```bash
 >>> echo Hello Bash!
 Hello Bash!
+```
+反斜杠`\`用于多行编辑，`Bash`将下一行与当前行放在一起解释。
 
+```bash
 >>> echo Hello \
 > Bash!
 Hello Bash!
 ```
 
-反斜杠`\`用于多行编辑，`Bash`将下一行与当前行放在一起解释。
+`Bash`使用空格区分不同的参数。上述`Hello`和`Bash!`是两个参数，`Bash`会自动忽略多余的空格。
 
 ```bash
 >>> echo Hello		       Bash!
 Hello Bash!
 ```
-
-`Bash`使用空格区分不同的参数。上述`Hello`和`Bash!`是两个参数，`Bash`会自动忽略多余的空格。
 
 - 参数`-e`：激活双引号`“”`和单引号`‘’`中的转义字符。
 
