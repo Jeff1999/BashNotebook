@@ -21,7 +21,7 @@ ubuntu
 - `\r`：回车
 - `\t`：制表符
 
-通过使用`echo`的`-e`参数打印转移字符：
+通过使用`echo`的`-e`参数打印转义字符：
 
 ```bash
 >>> echo -e "Hello\tWorld"
@@ -115,7 +115,89 @@ _________
 
 `Here`文档
 
+`Here`文档（Here document）是一种输入多行字符串的方法，格式如下：
+
+```bash
+<< token
+document
+token
+```
+
+`<< token`：开始标记符。`token`常用文档的名称。
+
+`token`：结束标记符。
+
+`Here`文档内部发生变量替换，支持反斜杠转义，不支持通配符扩展，双引号和单引号变成普通字符。
+
+```bash
+>>> var="Hello Bash"
+
+>>> cat << __example__
+> $var
+> "$var"
+> '$var'
+> __example__
+Hello Bash
+"Hello Bash"
+'Hello Bash'
+```
+
+若在`token`处加上单引号，则变量替换失效：
+
+```bash
+>>> cat << '__example__'
+> $var
+> "$var"
+> '$var'
+> __example__
+$var
+"$var"
+'$var'
+```
+
+`Here`文档的本质是重定向，它将字符串重定向输出给每个命令，等效于`echo`命令：
+
+```bash
+>>> cat << __example__
+> Hello Bash
+> __example__
+Hello Bash
+
+>>> echo "Hello Bash" | cat
+Hello Bash
+```
+
+`Here`文档只适用于接受以标准输入作为参数的命令，例如`echo`命令无法接受标准输入作为参数，则`Here`文档对其无效，`echo`命令不会有任何输出：
+
+```bash
+>>> echo << __example__
+> Hello Bash
+> __example__
+
+```
+
+`Here`文档不能作为变量的值，只能用于接受标准输入作为参数的命令的参数。
+
 -----------------
 
-`Here`字符串
+`Here`字符串（Here string），用三个小于号`<<<`表示，格式如下：
 
+```bash
+<<< string
+```
+
+`Here`字符串将字符串通过标准输入传递给命令，只适用于接受标准输入作为参数的命令。
+
+```bash
+>>> cat <<< "Hello Bash"
+Hello Bash
+
+>>> echo "Hello Bash" | cat
+Hello Bash
+
+>>> md5sum <<< 'Hello Bash'
+18e38bf51006df9890a7b4694fc6b45c  -
+
+>>> echo "Hello Bash" | md5sum
+18e38bf51006df9890a7b4694fc6b45c  -
+```
