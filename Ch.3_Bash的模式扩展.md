@@ -1,6 +1,6 @@
 # Ch.3 `Bash`的模式扩展
 
-`Shell`在执行用于的指令前，会根据空格将用户的输入拆分成词元（token），并扩展词元中的特殊字符。扩展完成后才会调用相应的命令。这种对于特殊字符的扩展，称为模式扩展（globbing），其中用到通配符的扩展又称为通配符扩展（wildcard expansion）。
+`Shell`在执行用于的指令前，会根据空格将用户的输入拆分成词元（token），并扩展词元中的特殊字符。扩展完成后才会调用相应的命令。这种对于特殊字符的扩展，称为模式扩展（globing），其中用到通配符的扩展又称为通配符扩展（wildcard expansion）。
 
 `Bash`提供了以下八种扩展：
 
@@ -168,9 +168,6 @@ data_1.csv  data_2.csv
 - `[a-z]`：所有小写字母。
 - `[a-zA-Z]`：所有小写字母与大写字母。
 - `[a-zA-Z0-9]`：所有小写字母、大写字母与数字。
-- `[abc]*`：所有以`a`、`b`、`c`字符之一开头的文件名。
-- `program.[co]`：文件`program.c`与文件`program.o`。
-- `BACKUP.[0-9][0-9][0-9]`：所有以`BACKUP.`开头，后面是三个数字的文件名。
 
 ----------------
 
@@ -338,14 +335,156 @@ R
   引用文件名时，需要使用单引号或双引号：
 
   ```bash
-  >>> touch "data*.txt": ls data?.txt
+  >>> touch "data*.txt"; ls data?.txt
   'data*.txt'
   ```
 
 --------------------
 
-量词语法：
+量词语法：用于控制模式匹配的次数。当文件不存在时，不会发生扩展。
+
+可以通过设置`Bash`的`extaglob`参数开启或关闭该功能，默认开启：
+
+```bash
+>>> shopt extglob
+extglob        	on
+```
+
+可通过参数开启量词语法：
+
+```bash
+>>> shopt -s extglob
+```
+
+常用量词如法如下：
+
+- `?(pattern-list)`：匹配零个或一个模式。
+
+  ```bash
+  >>> touch {a..c}.txt abc.txt abcbc.txt
+  
+  >>> ls a?(bc).txt
+  abc.txt  a.txt
+  ```
+
+- `*(pattern-list)`：匹配零个或多个模式。
+
+  ```bash
+  >>> touch {a..c}.txt abc.txt abcbc.txt
+  
+  >>> ls a*(bc).txt
+  abcbc.txt  abc.txt  a.txt
+  ```
+
+- `+(pattern-list)`：匹配一个或多个模式。
+
+  ```bash
+  >>> touch {a..c}.txt abc.txt abcbc.txt abc.py
+  
+  >>> ls a+(bc).txt
+  abcbc.txt  abc.txt
+  
+  >>> ls abc+(.txt|.py)
+  abc.py  abc.txt
+  ```
+
+- `@(pattern-list)`：只匹配一个模式。
+
+  ```bash
+  >>> touch {a..c}.txt abc.txt abcbc.txt
+  
+  >>> ls a@(bc).txt
+  abc.txt
+  ```
+
+- `!(pattern-list)`：匹配给定模式以外的任何内容。
+
+  ```bash
+  >>> touch {a..c}.txt abc.txt abcbc.txt
+  
+  >>> ls a!(bc).txt
+  abcbc.txt  a.txt
+  ```
+
+  匹配除`abc.txt`之外的任何内容。
 
 ---------------------------------
 
-`shopt`命令：
+`shopt`命令：用于调整`Bash`的行为。
+
+开启某个参数的格式如下：
+
+```bash
+>>> shopt -s [option]
+```
+
+关闭某个参数的格式如下：
+
+```bash
+>>> shopt -u [option]
+```
+
+查询某个参数是否开启：
+
+```bash
+>>> shopt [option]
+```
+
+- `nullglob`参数：用于调整通配符不匹配任何文件时，是否返回空字符。默认关闭。
+
+  默认情况下，当通配符不匹配时，保持不变：
+
+  ```bash
+  >>> rm b*
+  rm: 无法删除'b*': 没有那个文件或目录
+  ```
+
+  修改参数后，不匹配的通配符返回空字符串：
+
+  ```bash
+  >>> shopt -s nullglob
+  
+  >>> rm b*
+  rm: 缺少操作数
+  ```
+
+- `failglob`参数：用于调整当通配符不匹配任何文件时，`Bash`是否直接报错。默认关闭。
+
+  ```bash
+  >>> shopt -s failglob
+  
+  >>> rm b*
+  bash: 无匹配: b*
+  ```
+
+  在通配符扩展时，由于`b*`不匹配任何文件，`Bash`直接返回错误信息，而`rm`命令不会被执行。
+
+- `globstar`参数：用于调整是否通过`**`匹配零个或多个子目录。默认关闭。
+
+  假设有文件结构如下：
+
+  ```bash
+  a.txt
+  sub1/b.txt
+  sub1/sub2/c.txt
+  ```
+
+  如果不开启参数，则通过如下方式来匹配子目录：
+
+  ```bash
+  >>> ls *.txt */*.txt */*/*.txt
+  a.txt  sub1/b.txt  sub1/sub2/c.txt
+  ```
+
+  开启参数后，可以通过`**`来匹配多级目录结构：
+
+  ```bash
+  >>> shopt -s globstar
+  
+  >>> ls **/*.txt
+  a.txt  sub1/b.txt  sub1/sub2/c.txt
+  ```
+
+- `extglob`参数：用于调整`Bash`是否支持`ksh`的一些扩展语法。默认打开。
+- `nocaseglob`参数：用于调整通配符扩展时是否区分大小写。默认关闭。
+- `dotglob`参数：用于调整扩展结果是否包含隐藏文件。默认开启。
