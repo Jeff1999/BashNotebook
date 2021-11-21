@@ -1,6 +1,6 @@
 # Bash Notebook
 
-My `Bash` note.
+My `Bash` notebook.
 
 Reference 1: https://wangdoc.com/bash/index.html
 
